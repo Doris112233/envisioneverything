@@ -1,0 +1,297 @@
+{% load socialaccount %}
+{# Load the tag library #}
+{% load bootstrap5 %}
+{# Load CSS and JavaScript #}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% bootstrap_messages %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{% static 'products/styles.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'home/dark_mode.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <title>{% block title %}Envision Everything{% endblock %}</title>
+    <style>
+        .hero-section {
+            background: url("{% static 'home/images/main_bg.png' %}") center/cover no-repeat;
+            color: white;
+            padding: 120px 0;
+            text-align: center;
+        }
+        /* light mode default*/
+        .title-section {
+        background-color: #f0f8ff;
+        }
+        
+        body.dark-mode .title-section {
+        background-color: #0f2664;
+        }
+        .value-prop-icon {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: #4e73df;
+        }
+        .how-it-works-number {
+            width: 40px;
+            height: 40px;
+            background-color: #4e73df;
+            color: rgb(236, 236, 236);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 15px;
+            font-weight: bold;
+        }
+        body.dark-mode .cta-section {
+            background-color: #121212;
+            padding: 60px 0;
+            text-align: center;
+        }
+        .cta-section {
+            background-color: rgb(236, 236, 236);
+            padding: 60px 0;
+            text-align: center;
+        }
+        body.dark-mode .about {
+            background-color: #121212
+        }
+        .about{
+            background-color: rgb(224, 230, 248);
+        }
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        
+        .custom-navbar {
+            background-color: #3872f0;
+        }
+
+        .footer {
+            text-align: center; 
+            font-size: .8rem; 
+            color: #dbdbdb; 
+            padding: 0.5rem 0;
+            background-color: #3e5d9f;
+        }
+
+        body.dark-mode .dropdown-menu .nav-link{
+            background-color: #0f2664;
+        }
+
+        .profile-pic {
+            background-color: #f8f9fa;
+            border-radius: 50%;
+        }
+
+        .dropdown-menu .nav-link:hover{
+            background-color: #f8f9fa;
+            display: block
+        }
+    </style>
+     <script src="{% static 'home/dark_mode.js' %}"></script>
+</head>
+
+<body style="display: flex; flex-direction: column; min-height: 100vh; margin: 0;">
+    <main style="flex: 1;">
+    <nav class="navbar navbar-expand-lg navbar-dark custom-navbar">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'homepage' %}">Envision Everything!</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'homepage' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/products/browse/' %}active{% endif %}" href="{% url 'browse' %}">Our Products</a>
+                    </li>
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == '/products/collections/' %}active{% endif %}" href="{% url 'collections' %}">View Collections</a>
+                        </li>
+                        {% if is_librarian %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle {% if '/products/manage' in request.path %}active{% endif %}" href="#" id="manageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Manage
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="manageDropdown">
+                                    <li><a class="dropdown-item" href="{% url 'manage' %}">Manage Products</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'manage_borrow' %}">Manage Borrows</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'manage_users' %}">Manage Users</a></li>
+                                </ul>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == '/products/patron_manage_borrow/'%}active{% endif %}" href="{% url 'patron_manage_borrow' %}">My Borrows</a>
+                        </li>
+                    {% endif %}
+                </ul>
+                <div class="d-flex align-items-center">
+                    <ul class="navbar-nav me-auto">
+                        <li class="align-items-center me-2" style="height: 30px; margin-top: 5px;">
+                            <input type="checkbox" class="checkbox" id="checkbox" onclick="toggleDarkMode()">
+                            <label for="checkbox" class="checkbox-label" style="height: 30px;">
+                                <i class="bi bi-moon-fill"></i>
+                                <i class="bi bi-sun-fill"></i>
+                                <div class="ball"></div>
+                            </label>
+                        </li>
+
+                        
+                        {% if user.is_authenticated %}
+                            {% if has_pfp %}
+                            <li class="nav-item dropdown" style="margin-left: 5px; padding: 0px;">
+                                <a class="nav-link dropdown-toggle profile-pic-dropdown" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <img src = "{{ patron.profile_picture.url }}" class = "profile-pic" style="object-fit: contain; height: 30px; width: 30px; margin: 0px;">
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="profileDropdown">
+                                    <li class="nav-item me-2">
+                                        <a class="nav-link" href="{% url 'profile' %}">Profile</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="{% url 'account_logout' %}" class="nav-link">Logout</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            {% else %}
+                            <li class="nav-item dropdown" style="margin-left: 5px; padding: 0px;">
+                                <a class="nav-link dropdown-toggle profile-pic-dropdown" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-circle profile-pic fs-4" style = "color:darkgrey"></i>
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="profileDropdown">
+                                    <li class="nav-item me-2">
+                                        <a class="nav-link" href="{% url 'profile' %}">Profile</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="{% url 'account_logout' %}" class="nav-link">Logout</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                            <a href="{% provider_login_url 'google' %}?next=/" class="btn btn-light">Login with Google</a>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    {% block content %}
+
+    <section class="hero-section">
+        <div class="container">
+            {% if user.is_authenticated %}
+                <h1 class="display-4 fw-bold mb-4">Welcome, {{ user.username }}!</h1>
+                <p class="lead mb-5">
+                    {% if is_librarian %}
+                        You are logged in as a librarian. Manage equipment or help patrons today.
+                    {% else %}
+                        You are logged in as a patron. Ready to borrow some equipment?
+                    {% endif %}
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{% url 'browse' %}" class="btn btn-primary btn-lg">Our Products</a>
+                    {% if is_librarian %}
+                        <a href="{% url 'browse' %}" class="btn btn-outline-light btn-lg">Manage Products</a>
+                    {% endif %}
+                </div>
+            {% else %}
+                <h1 class="display-4 fw-bold mb-4">Capture Your Vision</h1>
+                <p class="lead mb-5">Borrow professional camera equipment from fellow enthusiasts or lend your gear to trusted community members.</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{% url 'browse' %}" class="btn btn-primary btn-lg">Our Products</a>
+                    <a href="{% provider_login_url 'google' %}?next=/" class="btn btn-outline-light btn-lg">Login to Borrow</a>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+    
+    <section class="py-5 about">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <div class="value-prop-icon">
+                        📸
+                    </div>
+                    <h5>Access Pro Gear</h5>
+                    <p>Get your hands on high-end equipment lent by trusted personnel.</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="value-prop-icon">
+                        💰
+                    </div>
+                    <h5>Affordable Rates</h5>
+                    <p>Pay only for the time you need at community-friendly prices.</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="value-prop-icon">
+                        🔒
+                    </div>
+                    <h5>Safe Transactions</h5>
+                    <p>Our platform ensures secure rentals with previous reviews and ratings.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5">How It Works</h2>
+            <div class="row text-center">
+                <div class="col-6 col-md-3">
+                    <div class="how-it-works-number">1</div>
+                    <h5>Browse & Select</h5>
+                    <p>Find the perfect equipment for your next photography or video project.</p>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="how-it-works-number">2</div>
+                    <h5>Book & Pay</h5>
+                    <p>Request to reserve the gear from your lendor.</p>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="how-it-works-number">3</div>
+                    <h5>Create Amazing Content</h5>
+                    <p>Pick up the equipment and start shooting your vision!</p>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="how-it-works-number">4</div>
+                    <h5>Review Equipment</h5>
+                    <p>Write a review to help other community members!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <div class="container">
+            {% if user.is_authenticated %}
+                <h2 class="mb-4">Ready to Start Creating?</h2>
+                <p class="lead mb-4">Check out our equipment catalog and find the perfect gear for your next project.</p>
+                <a href="{% url 'browse' %}" class="btn btn-primary btn-lg">Our Products</a>
+            {% else %}
+                <h2 class="mb-4">Ready to Capture Your Vision?</h2>
+                <p class="lead mb-4">Join our community of photographers and videographers today!</p>
+                <a href="{% provider_login_url 'google' %}?next=/" class="btn btn-primary btn-lg">Get Started</a>
+            {% endif %}
+        </div>
+    </section>
+
+    {% endblock %}
+    </main>
+    <footer class="footer">
+        <p style="margin: 0;">&copy; 2025 Envision Everything. All rights reserved.</p>
+        <p style="margin: 0;">This system is a class project. This system is not monitored. No real information should be submitted. </p>
+    </footer>
+</body>
+</html>

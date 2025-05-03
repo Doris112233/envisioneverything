@@ -1,0 +1,208 @@
+{% extends 'home/index.html' %}
+{% load static %}
+
+{% block title %}
+    Borrow {{ product.product_name }}
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-3">
+        {% if error %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endif %}
+        <h1 class="mb-6">Borrow this product!</h1>
+        <div class="row mb-5">
+            <!-- Product Image -->
+            <div class="col-md-4">
+                <img src="{{ product.image.url }}" class="img-fluid" alt="{{ product.product_name }}" style="max-height: 300px; object-fit: contain;">
+            </div>
+            
+            <!-- Product Info -->
+            <div class="col-md-8">
+                <!-- <div class="d-inline-flex align-items-center mb-3">
+                    <h3 class="card-title me-3">{{ product.product_name }}</h3>
+                    <span class="badge bg-primary rounded-pill mb-1">${{ product.price }}</span>
+                </div> -->
+                <div class="d-inline-flex align-items-center mb-3">
+                    <h3 class="card-title me-3">{{ product.product_name }}</h3>
+                    <span class="badge bg-primary rounded-pill mb-1">${{ product.price }}</span>
+                    {% if product.tag %}
+                        <span class="badge bg-info text-dark ms-2">{{ product.tag.name }}</span>
+                    {% endif %}
+                </div>
+                <h5 class="card-title mb-2">Description</h5>
+                <p class="card-text">{{ product.description }}</p>
+                <h5 class="card-title mb-2">Product Location</h5>
+                <p class="card-text">{{ product.location }}</p>
+                <!-- Buttons to trigger the modals -->
+                <h5 class="card-title mt-3 mb-3">Check out this product!</h5>
+                <!-- Borrow Button -->
+                <div class="mb-4">
+                    {% if product.is_available and not has_borrow_request %}
+                        <button type="button" class="btn btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#borrowModal">
+                            Borrow Now
+                        </button>
+                    {% elif has_borrow_request %}
+                        <button type="button" class="btn btn-outline-secondary me-2" disabled>
+                            Borrow Request Pending
+                        </button>
+                    {% elif product.is_repairing%}
+                        <button type="button" class="btn btn-outline-secondary me-2" disabled>
+                            Under Repair
+                        </button>
+                    {% else %}
+                        <button type="button" class="btn btn-outline-secondary me-2" disabled>
+                            Borrowed Out
+                        </button>
+                    {% endif %}
+                    {% if not product or not product.in_private_collection %}
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#collectionModal">
+                            Add to Collection
+                        </button>
+                    {% else %}
+                        <p style="color: red; margin-top: 0.5rem;">This product is already in a private collection.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <hr class="">
+            <!-- Review Form -->
+            {% if user.is_authenticated %}
+                <h5 class="card-title mt-3">Leave a Review</h5>
+                {% if review_error %}
+                    <div class="alert alert-danger" role="alert" style="width:60%; min-width:200px">
+                        {{ review_error }}
+                    </div>
+                {% endif %}
+                <form method="POST">
+                    {% csrf_token %}
+                    <div style="width:60%; min-width:200px">
+                        <div class="mb-3">
+                            <label for="rating" class="form-label">Rating</label>
+                            <select class="form-select" id="rating" name="rating" required style="width:200px">
+                                <option value="1">1 - Poor</option>
+                                <option value="2">2 - Fair</option>
+                                <option value="3">3 - Good</option>
+                                <option value="4">4 - Very Good</option>
+                                <option value="5">5 - Excellent</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="comment" class="form-label">Comment</label>
+                            <textarea class="form-control" id="comment" name="comment" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit Review</button>
+                    </div>
+                </form>
+            {% else %}
+                <p>Please <a href="{% url 'login' %}">login</a> to leave a review.</p>
+            {% endif %}
+
+            <!-- Reviews Section -->
+            <h5 class="card-title mt-5 mb-2">Reviews</h5>
+            {% for review in reviews %}
+                <div class="review">
+                    <h6>{{ review.user.username }} - Rating: {{ review.rating }}</h6>
+                    <p>{{ review.comment }}</p>
+                    <small>Reviewed on {{ review.created_at|date:"F d, Y" }}</small>
+                </div>
+                <hr>
+            {% empty %}
+                <p>No reviews yet.</p>
+            {% endfor %}
+        </div>
+
+        <!-- Borrow Modal -->
+        <div class="modal fade" id="borrowModal" tabindex="-1" aria-labelledby="borrowModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="borrowModalLabel">Borrow Product</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    
+                    <div class="modal-body">
+                        {% if error %}
+                            <div class="alert alert-danger" role="alert">
+                                {{ error }}
+                            </div>
+                        {% endif %}
+                        <form action="{% url 'borrow_product' product.id %}" method="POST">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="startDate" class="form-label">Select Borrow Start Date</label>
+                                <input type="date" class="form-control" id="startDate" name="start_date" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="returnDate" class="form-label">Select Borrow End Date</label>
+                                <input type="date" class="form-control" id="returnDate" name="return_date" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Confirm Borrow</button>
+                        </form>
+                        {% if success %}
+                            <div class="alert alert-success" role="alert">
+                                {{ success }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Collection Modal -->
+        <div class="modal fade" id="collectionModal" tabindex="-1" aria-labelledby="collectionModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="collectionModalLabel">Add to Collection</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    
+                    <div class="modal-body">
+                        <form action="{% url 'add_to_collections' %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="product" value="{{ product.id }}">
+                            <input type="hidden" name="next" value="{% url 'borrow_product' product.id %}">
+                            
+                            <div class="mb-3">
+                                <label for="currentCollection" class="form-label">Select Existing Collection</label>
+                                <select class="form-select" id="currentCollection" name="current_collection">
+                                    <option value="">-- Create New Collection --</option>
+                                    {% for collection in user_collections %}
+                                        <option value="{{ collection.id }}">{{ collection.collection_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="newCollection" class="form-label">Or Create New Collection</label>
+                                <input type="text" class="form-control" id="newCollection" name="collection_name" placeholder="New collection name">
+                            </div>
+                            {% if is_librarian %}
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="isPrivate" name="is_private">
+                                <label class="form-check-label" for="isPrivate">
+                                    Make Collection Private
+                                </label>
+                            </div>
+                            {% endif %}
+                            <button type="submit" class="btn btn-primary">Add to Collection</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Blur effect on background when a modal is open -->
+    <style>
+        .modal-backdrop {
+            backdrop-filter: blur(5px); 
+        }
+    </style>
+
+{% endblock %}

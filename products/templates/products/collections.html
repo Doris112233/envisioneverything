@@ -1,0 +1,413 @@
+{% extends 'home/index.html' %}
+
+{% block title %}
+    Collections
+{% endblock %}
+{% load static %}
+{% block content %}
+    <section class="py-4 border-bottom title-section">
+        <div class="container text-center">
+            <h2 class="fw-semibold mb-2" style="font-size: 3rem;">View Collections</h2>
+            {% if is_librarian %}
+            <p class="text-muted" style="font-size: 1.10rem;">View, edit, and delete public or private collections.</p>
+            {% else %}
+            <p class="text-muted" style="font-size: 1.10rem;">View public collections, edit your collections, and request access to private collections.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <section>
+        <form method="GET" action="{% url 'collections' %}" class="container mt-3">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-center position-relative">
+                        <input type="text" name="q" class="form-control search-input me-3"
+                            placeholder="Search collections by title" value="{{ query }}">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </section>
+
+    <div class="p-3">
+    <h2>Your Collections</h2>
+        <div class="row g-3">
+            {% for collection in collections %}
+                {% if collection.creator == user %}
+                    <div class="col-md-4">
+                        <div class="card p-3" style="width: 100%;">
+                            <div>
+                                <h5 style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#viewModal{{ collection.id }}">
+                                    {{ collection.collection_name }}
+                                    {% if is_librarian and collection.is_private %}
+                                        [PRIVATE]
+                                    {% endif %}
+                                </h5>
+                                <p>by {{collection.creator}}</p>
+                            </div>
+                            <div>
+                                {% for product in collection.products.all %}
+                                    {{ product.product_name }} <br>
+                                {% empty %}
+                                    <p>No products in this collection.</p>
+                                {% endfor %}
+                            </div>
+                            <div class="d-flex mt-2">
+                                <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#editModal{{ collection.id }}">
+                                    Edit
+                                </button>
+                                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#deleteModal{{ collection.id }}">
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                        <div class="modal fade" id="viewModal{{ collection.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content p-3">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">{{ collection.collection_name }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input type="text" class="form-control mb-3" placeholder="Search products..."
+                                               onkeyup="filterProducts(this, 'product-list-{{ collection.id }}')">
+                                        <div id="product-list-{{ collection.id }}">
+                                            {% for product in collection.products.all %}
+                                                <p>{{ product.product_name }}</p>
+                                            {% empty %}
+                                                <p>No products in this collection.</p>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal fade" id="editModal{{ collection.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ collection.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                              <div class="modal-content">
+                                <form method="POST" action="{% url 'edit_collection' collection.id %}">
+                                    {% csrf_token %}
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Remove Products from {{ collection.collection_name }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Select products to remove:</p>
+                                        {% for product in collection.products.all %}
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="remove_products" value="{{ product.id }}" id="product{{ product.id }}">
+                                                <label class="form-check-label" for="product{{ product.id }}">
+                                                    {{ product.product_name }}
+                                                </label>
+                                            </div>
+                                        {% empty %}
+                                            <p>No products in this collection.</p>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-danger">Remove Selected</button>
+                                    </div>
+                                </form>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="modal fade" id="deleteModal{{ collection.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ collection.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                              <div class="modal-content">
+                                <form method="POST" action="{% url 'delete_collection' collection.id %}">
+                                  {% csrf_token %}
+                                  <div class="modal-header">
+                                    <h5 class="modal-title" id="deleteModalLabel{{ collection.id }}">Confirm Deletion</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                  </div>
+                                  <div class="modal-body">
+                                    Are you sure you want to delete "{{ collection.collection_name }}"?
+                                  </div>
+                                  <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                  </div>
+                                </form>
+                              </div>
+                            </div>
+                          </div>
+                    </div>
+                {% endif %}
+            {% empty %}
+                <p>No collections available.</p>
+            {% endfor %}
+        </div>
+
+
+        <br> <h2>Private Collections</h2>
+        <div class="row g-3">
+        {% for collection in collections %}
+            {% if collection.is_private %}
+                <div class="col-md-4">
+                    <div class="card p-3" style="width: 100%;">
+                        <div>
+                            {% if is_librarian or user in collection.visible_to.all %}
+                                <h5 style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#viewModal{{ collection.id }}">
+                                    {% if collection.creator == user %}
+                                    {{ collection.collection_name }} [CREATOR]
+                                    {% else %}
+                                    {{ collection.collection_name }}
+                                    {% endif %}
+                                </h5>
+                            {% else %}
+                                <h5> {{ collection.collection_name }} </h5>
+                            {% endif %}
+                            <p>by {{collection.creator}}</p>
+                            {% if collection.creator != user and not is_librarian %}
+                                {% if user not in collection.visible_to.all %}
+                                    {% if user in collection.visibility_requests.all %}
+                                        <p class="text-muted">Access request sent.</p>
+                                    {% else %}
+                                        <form method="post" action="{% url 'request_access' collection.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-outline-primary mt-2">Request Access</button>
+                                        </form>
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        {% if collection.creator == user or is_librarian or user in collection.visible_to.all %}
+                        <div>
+                            {% for product in collection.products.all %}
+                                {{ product.product_name }} <br>
+                            {% empty %}
+                                <p>No products in this collection.</p>
+                            {% endfor %}
+                        </div>
+                        {% if collection.creator == user %}
+                        <div class="d-flex mt-2">
+                            <button type="button" class="btn btn-primary me-1" data-bs-toggle="modal" data-bs-target="#editModal{{ collection.id }}">
+                                Edit
+                            </button>
+                            <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#deleteModal{{ collection.id }}">
+                                Delete
+                            </button>
+                        </div>
+                        {% endif %}
+                        {% if collection.visibility_requests.exists %}
+                            <div class="mt-3">
+                                <h6>Access Requests:</h6>
+                                <ul class="list-group">
+                                    {% for requester in collection.visibility_requests.all %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            {{ requester.username }}
+                                            <form method="post" action="{% url 'handle_access_request' collection.id requester.id %}">
+                                                {% csrf_token %}
+                                                <button name="action" value="approve" class="btn btn-sm btn-success me-1">Approve</button>
+                                                <button name="action" value="deny" class="btn btn-sm btn-danger">Deny</button>
+                                            </form>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                    <div class="modal fade" id="viewModal{{ collection.id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content p-3">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">{{ collection.collection_name }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <input type="text" class="form-control mb-3" placeholder="Search products..."
+                                           onkeyup="filterProducts(this, 'product-list-{{ collection.id }}')">
+                                    <div id="product-list-{{ collection.id }}">
+                                        {% for product in collection.products.all %}
+                                            <p>{{ product.product_name }}</p>
+                                        {% empty %}
+                                            <p>No products in this collection.</p>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% if collection.is_private and is_librarian %}
+                    <div class="modal fade" id="editModal{{ collection.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ collection.id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                          <div class="modal-content">
+                            <form method="POST" action="{% url 'edit_collection' collection.id %}">
+                                {% csrf_token %}
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Remove Products from {{ collection.collection_name }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Select products to remove:</p>
+                                    {% for product in collection.products.all %}
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="remove_products" value="{{ product.id }}" id="product{{ product.id }}">
+                                            <label class="form-check-label" for="product{{ product.id }}">
+                                                {{ product.product_name }}
+                                            </label>
+                                        </div>
+                                    {% empty %}
+                                        <p>No products in this collection.</p>
+                                    {% endfor %}
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-danger">Remove Selected</button>
+                                </div>
+                            </form>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="modal fade" id="deleteModal{{ collection.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ collection.id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                          <div class="modal-content">
+                            <form method="POST" action="{% url 'delete_collection' collection.id %}">
+                              {% csrf_token %}
+                              <div class="modal-header">
+                                <h5 class="modal-title" id="deleteModalLabel{{ collection.id }}">Confirm Deletion</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                              </div>
+                              <div class="modal-body">
+                                Are you sure you want to delete "{{ collection.collection_name }}"?
+                              </div>
+                              <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                              </div>
+                            </form>
+                          </div>
+                        </div>
+                      </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% empty %}
+            <p>No collections available.</p>
+        {% endfor %}
+        </div>
+
+        <br> <h2>Public Collections</h2>
+        <div class="row g-3">
+        {% for collection in collections %}
+            {% if not collection.is_private %}
+            <div class="col-md-4">
+                <div class="card p-3" style="width: 100%;">
+                    <h5 style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#viewModal{{ collection.id }}">
+                        {{ collection.collection_name }}
+                        {% if collection.creator == user %}
+                            [CREATOR]
+                        {% endif %}
+                    </h5>
+                    <p>by {{collection.creator}}</p>
+                    <div>
+                        {% for product in collection.products.all %}
+                            {{ product.product_name }} <br>
+                        {% empty %}
+                            <p>No products in this collection.</p>
+                        {% endfor %}
+                    </div>
+                    {% if collection.creator == user or is_librarian %}
+                    <div class="d-flex mt-2">
+                        <button type="button" class="btn btn-primary me-1" data-bs-toggle="modal" data-bs-target="#editModal{{ collection.id }}">
+                            Edit
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#deleteModal{{ collection.id }}">
+                            Delete
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="modal fade" id="viewModal{{ collection.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content p-3">
+                            <div class="modal-header">
+                                <h5 class="modal-title">{{ collection.collection_name }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="text" class="form-control mb-3" placeholder="Search products..."
+                                       onkeyup="filterProducts(this, 'product-list-{{ collection.id }}')">
+                                <div id="product-list-{{ collection.id }}">
+                                    {% for product in collection.products.all %}
+                                        <p>{{ product.product_name }}</p>
+                                    {% empty %}
+                                        <p>No products in this collection.</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="editModal{{ collection.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ collection.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                      <div class="modal-content">
+                        <form method="POST" action="{% url 'edit_collection' collection.id %}">
+                            {% csrf_token %}
+                            <div class="modal-header">
+                                <h5 class="modal-title">Remove Products from {{ collection.collection_name }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Select products to remove:</p>
+                                {% for product in collection.products.all %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="remove_products" value="{{ product.id }}" id="product{{ product.id }}">
+                                        <label class="form-check-label" for="product{{ product.id }}">
+                                            {{ product.product_name }}
+                                        </label>
+                                    </div>
+                                {% empty %}
+                                    <p>No products in this collection.</p>
+                                {% endfor %}
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-danger">Remove Selected</button>
+                            </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="modal fade" id="deleteModal{{ collection.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ collection.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                      <div class="modal-content">
+                        <form method="POST" action="{% url 'delete_collection' collection.id %}">
+                          {% csrf_token %}
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="deleteModalLabel{{ collection.id }}">Confirm Deletion</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                            Are you sure you want to delete "{{ collection.collection_name }}"?
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+            </div>
+            {% endif %}
+        {% empty %}
+            <p>No collections available.</p>
+        {% endfor %}
+        </div>
+    </div>
+    <script>
+        function filterProducts(input, containerId) {
+            const filter = input.value.toLowerCase();
+            const container = document.getElementById(containerId);
+            const items = container.getElementsByTagName("p");
+            for (let item of items) {
+                const text = item.textContent || item.innerText;
+                item.style.display = text.toLowerCase().includes(filter) ? "" : "none";
+            }
+        }
+    </script>
+{% endblock %}

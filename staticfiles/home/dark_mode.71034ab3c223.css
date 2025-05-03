@@ -1,0 +1,121 @@
+
+/* Checkbox design inspired by: https: //codepen.io/Umer_Farooq/pen/eYJgKGN */
+.checkbox {
+  opacity: 0;
+}
+
+.bi-moon-fill {
+  color: #f1c40f;
+}
+
+.bi-sun-fill {
+  color: #f39c12;
+}
+
+.checkbox-label {
+  border: white solid 1px;
+  /* background-color: black; */
+  padding-inline: 12px;
+  padding-top: 2px;
+  border-top-left-radius: 18px;
+  border-bottom-left-radius: 18px;
+  border-top-right-radius: 18px;
+  border-bottom-right-radius: 18px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.checkbox-label .ball {
+  background-color: #fff;
+  width: 22px;
+  height: 22px;
+  position: relative;
+  left: -5px;
+  top: -23px;
+  border-radius: 50%;
+  transition: transform 0.2s linear;
+  z-index: 1;
+}
+
+.checkbox:checked+.checkbox-label .ball {
+  transform: translateX(24px);
+}
+
+.checkbox:checked+.checkbox-label {
+  background-color: black;
+  border-color: black;
+}
+
+
+/* Dark mode styles */
+body.dark-mode {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+/* Navbar dark mode */
+/* body.dark-mode .custom-navbar {
+  background-color: #1e1e1e;
+} */
+
+/* Cards, sections and containers in dark mode */
+body.dark-mode .card,
+body.dark-mode .bg-light,
+body.dark-mode .cta-section {
+  background-color: #2d2d2d !important;
+  color: #e0e0e0;
+}
+
+/* Forms and inputs */
+body.dark-mode .form-control {
+  background-color: #333;
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+/* Buttons */
+body.dark-mode .btn-outline-light {
+  color: #e0e0e0;
+  border-color: #e0e0e0;
+}
+
+/* Tables */
+body.dark-mode .table {
+  color: #e0e0e0;
+}
+
+/* Footer */
+body.dark-mode footer {
+  background-color: #1e1e1e;
+  color: #a0a0a0;
+}
+
+/* Value proposition icons in dark mode */
+body.dark-mode .value-prop-icon {
+  color: #7698f8;
+}
+
+/* Add smooth transitions */
+body,
+.card,
+.bg-light,
+.cta-section,
+.navbar,
+.form-control,
+footer {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dropdown menus in dark mode */
+body.dark-mode .dropdown-menu {
+  background-color: #2d2d2d;
+  border-color: #444;
+}
+
+body.dark-mode .dropdown-item {
+  color: #e0e0e0;
+}
+
+body.dark-mode .dropdown-item:hover {
+  background-color: #3d3d3d;
+  color: #ffffff;
+}

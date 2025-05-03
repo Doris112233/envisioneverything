@@ -1,0 +1,77 @@
+{% extends 'home/index.html' %}
+
+{% block title %}
+    Manage
+{% endblock %}
+{% load static %}
+{% block content %}
+    <section class="py-4 border-bottom title-section">
+        <div class="container text-center">
+            <h2 class="fw-semibold mb-2" style="font-size: 3rem;">Manage Products</h2>
+            <p class="text-muted" style="font-size: 1.10rem;">Add, edit, or repair any product.</p>
+        </div>
+    </section>
+    <div class="container mt-3 align-items-center justify-content-center text-center">        <div>
+        <a href="{% url 'add_product' %}" style="font-size: 18pt; color:rgb(195, 51, 51)">Add a product</a>
+    </div>
+</div>
+    <div class="row g-3 p-3">
+        {% for product in products %}
+        <div class="col-md-4">
+            <div class="card p-3" style="width: 100%;">
+                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.product_name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.product_name }}</h5>
+                    <p class="card-text">{{ product.description }}</p>
+                    <p class="card-text">${{ product.price }}</p>
+                    <p class="card-text">
+                        <strong>Status:</strong>
+                        {% if product.is_available %}
+                            <span class="badge bg-success">Available</span>
+                        {% elif product.is_repairing %}
+                            <span class="badge bg-warning">Under Repair</span>
+                        {% else %}
+                            <span class="badge bg-danger">Not Available</span>
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'edit_product' product.id %}" class="btn btn-primary btn-sm">Edit</a>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ product.id }}">
+                        Delete
+                    </button>
+                    <form method="post" style="display: inline;">
+                        {% csrf_token %}
+                        {% if product.is_available %}
+                            <input type="hidden" name="action" value="send_to_repair">
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <button type="submit" class="btn btn-warning btn-sm">Send to Repair</button>
+                        {% elif product.is_repairing %}
+                            <input type="hidden" name="action" value="repair_complete">
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <button type="submit" class="btn btn-success btn-sm">Repair Complete</button>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+            <div class="modal fade" id="deleteModal{{ product.id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">Delete Product</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to delete <strong>{{ product.product_name }}</strong>?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <a href="{% url 'delete_product' product.id %}" class="btn btn-danger">Delete</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+            <p>No products available.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

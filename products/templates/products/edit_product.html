@@ -1,0 +1,44 @@
+{% extends 'home/index.html' %}
+
+{% block title %}
+    Edit Product
+{% endblock %}
+
+{% load static %}
+
+{% block content %}
+    <div class="container">
+        <h2>Edit Product</h2>
+        
+        <!-- Product Status -->
+        <div class="alert {% if product.is_available %}alert-success{% else %}alert-danger{% endif %}">
+            <strong>Status:</strong> 
+            {% if product.is_available %}
+                Available
+            {% elif product.is_repairing %}
+                Under Repair
+            {% else %}
+                Not Available (Currently Borrowed)
+            {% endif %}
+        </div>
+        
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="save_changes">
+            {{ product_form.as_p }}
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="{% url 'manage' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+
+        <!-- <form method="post" style="margin-top: 10px;">
+            {% csrf_token %}
+            {% if product.is_available %}
+                <input type="hidden" name="action" value="send_to_repair">
+                <button type="submit" class="btn btn-warning">Send to Repair</button>
+            {% elif product.is_repairing %}
+                <input type="hidden" name="action" value="repair_complete">
+                <button type="submit" class="btn btn-success">Repair Complete</button>    
+            {% endif %}
+        </form> -->
+    </div>
+{% endblock %}

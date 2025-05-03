@@ -1,0 +1,43 @@
+{% extends 'home/index.html' %}
+
+{% block title %}
+    Add Product
+{% endblock %}
+
+{% block content %}
+    <section class="py-4 border-bottom title-section">
+        <div class="container text-center">
+            <h2 class="fw-semibold mb-2" style="font-size: 3rem;">Add a product</h2>
+            <p class="text-muted" style="font-size: 1.10rem;">Enter your new product and relevant details.</p>
+        </div>
+    </section>
+    <div style="margin: 40px 0; margin-left: 5%;">
+        <h2>Enter Product Details</h2>
+        <form method="POST" action="{% url 'add_product' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <!-- <div class="mb-3">
+                {{ product_form.product_name.label_tag }}
+                {{ product_form.product_name }}
+            </div> -->
+            <div class="mb-3">
+                {{ product_form.tag_name.label_tag }}
+                {{ product_form.tag_name }}
+                <small class="form-text text-muted">Optional: Add a single tag to help users find this item</small>
+            </div>
+            <div class="mb-3">
+                {{ product_form.image.label_tag }}
+                {{ product_form.image }}
+            </div>
+            <div class="mb-3">
+                {{ product_form.description.label_tag }}
+                {{ product_form.description }}
+            </div>
+            <div class="mb-3">
+                {{ product_form.price.label_tag }}
+                {{ product_form.price }}
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <a href="{% url 'manage' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+{% endblock %}

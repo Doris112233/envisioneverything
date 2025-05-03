@@ -1,0 +1,44 @@
+{% extends 'home/index.html' %}
+
+{% block title %}
+    Profile
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-3 align-items-left justify-content-left text-left">
+        <div class = "row">
+            <div class = "col border-end">
+                <h1>Edit Profile</h1>
+                <h2>Hello, {{ user.username }}!</h2>
+                <img src = "{{ patron.profile_picture.url}}" style="object-fit: contain; height: 150px; width: 150px; background-color: #f8f9fa; border-radius: 50%;">
+                
+                <h3>Edit Profile Picture:</h3>
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form.as_p }} 
+                    <p><small><em>(recommended size: 150x150 pixels)</em></small></p>
+                    <input type="submit" value="Submit">
+                </form>
+                
+            </div>
+                    
+            <div class = "col border-left">
+                <h1>My Profile</h1>
+                <div>
+                    <ul>
+                        <li><a href="{% url 'collections' %}">My Collections</a></li>
+                        <li><a href="{% url 'patron_manage_borrow' %}">My Borrow History</a></li>
+                    </ul>
+                </div>
+                {% if is_librarian %}
+                <h3>Librarian Links:</h3>
+                <ul>
+                    <li><a href="{% url 'manage' %}">Manage Products</a></li>
+                    <li><a href="{% url 'manage_borrow' %}">Manage Borrows</a></li>
+                    <li><a href="{% url 'manage_users' %}">Manage Users</a></li>
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

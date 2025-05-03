@@ -1,0 +1,14 @@
+{% extends 'home/index.html' %}
+
+{% block content %}
+  <div class="container p-3">
+    <h2>Add Product to Collection</h2>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        {{ form.as_p }}
+      </div>
+      <button type="submit" class="btn btn-primary">Add to Collection</button>
+    </form>
+  </div>
+{% endblock %}

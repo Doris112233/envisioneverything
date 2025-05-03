@@ -1,0 +1,118 @@
+{% extends 'home/index.html' %}
+{% load static %}
+
+{% block title %}
+    Manage My Borrows
+{% endblock %}
+
+{% block content %}
+    <section class="py-4 border-bottom title-section">
+        <div class="container text-center">
+            <h2 class="fw-semibold mb-2" style="font-size: 3rem;">Borrow Activity</h2>
+            <p class="text-muted" style="font-size: 1.10rem;">Track borrow requests, active borrows, and past borrowing history.</p>
+        </div>
+    </section>
+
+    <div class="container mt-3">
+        {% if success %}
+            <div class="alert alert-success">{{ success }}</div>
+        {% endif %}
+        {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+
+        <!-- Overdue Borrows Table -->
+        <h3>Borrow Requests</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Start Date</th>
+                    <th>Return Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for borrow in borrow_requests %}
+                    <tr>
+                        <td>{{ borrow.product.product_name }}</td>
+                        <td>{{ borrow.start_date }}</td>
+                        <td>{{ borrow.return_date }}</td>
+                        <td>{{ borrow.status }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No borrow requests.</td>
+                    </tr>
+                {% endfor %}
+                
+            </tbody>
+        </table>
+    
+        <h3>Active Borrows</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Start Date</th>
+                    <th>Return Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for borrow in active_borrows %}
+                    <tr class="{% if borrow.is_overdue %}table-danger{% endif %}">
+                        <td>{{ borrow.product.product_name }}</td>
+                        <td>{{ borrow.start_date }}</td>
+                        <td>{{ borrow.return_date }}</td>
+                        <td>
+                            {{ borrow.status }}
+                            {% if borrow.is_overdue %}
+                                <span class="badge bg-danger ms-2">Overdue</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="product_id" value="{{ borrow.product.id }}">
+                                <button type="submit" class="btn btn-primary">Return</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No active borrows.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    
+        <h3>Borrow History</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Start Date</th>
+                    <th>Return Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for borrow in history_borrows %}
+                    <tr>
+                        <td>{{ borrow.product.product_name }}</td>
+                        <td>{{ borrow.start_date }}</td>
+                        <td>{{ borrow.return_date }}</td>
+                        <td>{{ borrow.status }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center">No borrow history.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+{% endblock %}

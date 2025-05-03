@@ -1,0 +1,60 @@
+{% extends 'home/index.html' %}
+
+{% block title %}
+    Manage Users
+{% endblock %}
+
+{% block content %}
+<section class="py-4 border-bottom title-section">
+    <div class="container text-center">
+        <h2 class="fw-semibold mb-2" style="font-size: 3rem;">Manage Users</h2>
+        <p class="text-muted" style="font-size: 1.10rem;">Change user accounts from patron to librarian, or vice versa.</p>
+    </div>
+</section>
+
+<div class="container mt-2 align-items-center justify-content-center text-center">
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user_data in users_with_roles %}
+                <tr>
+                    <td>{{ user_data.user.username }}</td>
+                    <td>{{ user_data.user.email }}</td>
+                    <td>
+                        {% if user_data.is_librarian %}
+                            Librarian
+                        {% else %}
+                            Patron
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="user_id" value="{{ user_data.user.id }}">
+                            {% if user_data.is_librarian %}
+                                <input type="hidden" name="action" value="remove_librarian">
+                                <button type="submit" class="btn btn-danger btn-sm">Remove Librarian</button>
+                            {% else %}
+                                <input type="hidden" name="action" value="make_librarian">
+                                <button type="submit" class="btn btn-success btn-sm">Make Librarian</button>
+                            {% endif %}
+                        </form>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">No users found.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

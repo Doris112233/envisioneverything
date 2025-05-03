@@ -1,0 +1,14 @@
+ol {
+    display: flex;
+    flex-wrap: wrap;
+    padding-left: 10%;
+}
+ol li {
+    flex: 1 1 45%;
+    margin: 10px;
+}
+
+.table-danger {
+    background-color: #f8d7da; /* Light red */
+    color: #721c24; /* Dark red text */
+}

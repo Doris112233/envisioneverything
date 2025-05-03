@@ -1,0 +1,101 @@
+{% extends 'home/index.html' %}
+{% load socialaccount %}
+
+{% block title %}
+    Our Products
+{% endblock %}
+
+{% load static %}
+
+{% block content %}
+    <section class="py-5 title-section">
+        <div class="container text-center">
+            <h1 class="display-3 fw-bold mb-3">Our Products</h1>
+            <p class="lead">Browse through the assortment of camera equipment and accessories we lend!</p>
+        </div>
+    </section>
+
+    <section>
+        <form method="GET" action="{% url 'browse' %}" class="container mt-3">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-center position-relative">
+                        <input type="text" name="q" class="form-control search-input me-3" 
+                            placeholder="Search" value="{{ query }}">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </section>
+
+    <section class="py-5">
+        <div class="container">
+            {% if products %}
+                <div class="row">
+                    {% for product in products %}
+                        {% if is_librarian or not product.in_private_collection %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-img-container" style="height: 300px; overflow: hidden;">
+                                    <img src="{{ product.image.url }}" class="card-img-top img-fluid" alt="{{ product.product_name }}" style="object-fit: contain; height: 100%; width: 100%;">
+                                </div>
+                                <!-- <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h4 class="card-title">{{ product.product_name }}</h4>
+                                        <span class="badge bg-primary rounded-pill">${{ product.price }}</span>
+                                    </div>
+                                    <p class="card-text">{{ product.description }}</p>
+                                    {% if user.is_authenticated %}
+                                        <a href="{% url 'borrow_product' product.id%}" class="btn btn-outline-primary mt-2">Borrow Now</a>
+                                    {% else %}
+                                        <a href="{% provider_login_url 'google' %}?next=/" class="btn btn-outline-primary mt-2">Login to Borrow</a>
+                                    {% endif %}
+                                </div> -->
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h4 class="card-title">{{ product.product_name }}</h4>
+                                        <span class="badge bg-primary rounded-pill">${{ product.price }}</span>
+                                    </div>
+                                    {% if product.tag %}
+                                        <span class="badge bg-info text-dark mb-2">{{ product.tag.name }}</span>
+                                    {% endif %}
+                                    <p class="card-text">{{ product.description }}</p>
+                                    {% if user.is_authenticated %}
+                                        <a href="{% url 'borrow_product' product.id%}" class="btn btn-outline-primary mt-2">Borrow Now</a>
+                                    {% else %}
+                                        <a href="{% provider_login_url 'google' %}?next=/" class="btn btn-outline-primary mt-2">Login to Borrow</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <div class="mb-4">📸</div>
+                    <h3>No products available</h3>
+                    <p class="text-muted">Check back soon for new equipment!</p>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="py-5 bg-light">
+        <div class="container text-center">
+            <h2>Looking for something specific?</h2>
+            <p class="lead">We're constantly updating our inventory with new equipment.</p>
+        </div>
+    </section>
+
+    <style>
+        .search-input {
+            height: 50px;
+            border-radius: 30px;
+            padding-left: 35px;
+            border: none;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+{% endblock %}
